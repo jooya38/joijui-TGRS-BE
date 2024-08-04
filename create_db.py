@@ -38,7 +38,7 @@ cur.execute('''
 ''')
 
 # site.csv 파일 읽기 및 데이터 삽입
-with open('data/site.csv', 'r', encoding='utf-8') as file:
+with open('./site.csv', 'r', encoding='utf-8') as file:
     reader = csv.reader(file)
     next(reader)  # 헤더 건너뛰기
     for row in reader:
@@ -49,7 +49,7 @@ with open('data/site.csv', 'r', encoding='utf-8') as file:
         print(f"Inserted site: {row[0]}")
 
 # users.csv 파일 읽기 및 데이터 삽입
-with open('data/users.csv', 'r', encoding='utf-8') as file:
+with open('./users.csv', 'r', encoding='utf-8') as file:
     reader = csv.reader(file)
     next(reader)  # 헤더 건너뛰기
     for row in reader:
@@ -60,7 +60,7 @@ with open('data/users.csv', 'r', encoding='utf-8') as file:
         print(f"Inserted user: {row[0]}")
 
 # reviews.csv 파일 읽기 및 데이터 삽입
-with open('data/reviews.csv', 'r', encoding='utf-8') as file:
+with open('./reviews.csv', 'r', encoding='utf-8') as file:
     reader = csv.reader(file)
     next(reader)  # 헤더 건너뛰기
     for row in reader:
