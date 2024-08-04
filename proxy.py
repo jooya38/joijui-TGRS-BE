@@ -16,7 +16,7 @@ def get_db_connection():
 
 @app.route('/')
 def home():
-    return "Hello, Flask with SQLite!"
+    return "딱걸렸어 솔루션 API PROXY"
 
 @app.route('/sites', methods=['GET'])
 def get_sites():
