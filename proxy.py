@@ -78,8 +78,8 @@ def get_sites():
 
     # 모든 데이터베이스 URL도 정규화하여 비교
     for row in data:
-        print(normalize_url(row['link']), normalized_url)
         if normalize_url(row['link']) == normalized_url:
+            print(normalize_url(row['link']), normalized_url)
             result = {
                 "result": True,
                 "link": row['link'],
