@@ -1,4 +1,4 @@
-user_id,link,review
-jojo,shop-pingon.com,This site is a scam.
-jung1,shop-pingon.com,이 사이트가 사기일 줄이야.
-jojo,LOTTE-ON.SHOP,Avoid this site at all costs.
+user_id,password,link,review
+jojo,0000,shop-pingon.com,This site is a scam.
+jung1,1234,shop-pingon.com,이 사이트가 사기일 줄이야.
+jojo,0000,LOTTE-ON.SHOP,Avoid this site at all costs.

@@ -25,31 +25,12 @@ def get_sites():
     conn.close()
     return jsonify([dict(row) for row in data])
 
-@app.route('/users', methods=['GET'])
-def get_users():
-    conn = get_db_connection()
-    data = conn.execute('SELECT * FROM users').fetchall()
-    conn.close()
-    return jsonify([dict(row) for row in data])
-
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
     conn = get_db_connection()
     data = conn.execute('SELECT * FROM reviews').fetchall()
     conn.close()
     return jsonify([dict(row) for row in data])
-
-@app.route('/users', methods=['POST'])
-def add_user():
-    new_user = request.get_json()
-    conn = get_db_connection()
-    conn.execute('''
-        INSERT INTO users (user_id, name, phone, email, password, points)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (new_user['user_id'], new_user['name'], new_user['phone'], new_user['email'], new_user['password'], int(new_user['points'])))
-    conn.commit()
-    conn.close()
-    return '', 201
 
 @app.route('/sites', methods=['POST'])
 def add_site():
@@ -68,9 +49,9 @@ def add_review():
     new_review = request.get_json()
     conn = get_db_connection()
     conn.execute('''
-        INSERT INTO reviews (user_id, link, review)
-        VALUES (?, ?, ?)
-    ''', (new_review['user_id'], new_review['link'], new_review['review']))
+        INSERT INTO reviews (user_id, password, link, review)
+        VALUES (?, ?, ?, ?)
+    ''', (new_review['user_id'], new_review['password'], new_review['link'], new_review['review']))
     conn.commit()
     conn.close()
     return '', 201
