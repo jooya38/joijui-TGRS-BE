@@ -4,7 +4,8 @@ import os
 from create_db import init_db  # 데이터베이스 초기화 함수 가져오기
 from urllib.parse import urlparse, urlunparse
 from flask_cors import CORS
-
+import time
+from OpenSSL import SSL
 
 app = Flask(__name__)
 CORS(app)  # 모든 출처에서의 요청을 허용
@@ -14,11 +15,27 @@ if not os.path.exists('site.db'):
     init_db()
 
 def get_db_connection():
-    conn = sqlite3.connect('site.db')
+    conn = sqlite3.connect('site.db', timeout=10)
     encoding = conn.execute("PRAGMA encoding").fetchone()[0]
     print(f"Database encoding: {encoding}")
     conn.row_factory = sqlite3.Row
     return conn
+
+def execute_with_retry(query, params=(), retries=5, delay=1):
+    for attempt in range(retries):
+        try:
+            conn = get_db_connection()
+            conn.execute(query, params)
+            conn.commit()
+            break
+        except sqlite3.OperationalError as e:
+            if 'database is locked' in str(e):
+                print("Database is locked, retrying...")
+                time.sleep(delay)  # 잠금이 해제될 때까지 대기
+            else:
+                raise
+        finally:
+            conn.close()
 
 def normalize_url(url):
     parsed_url = urlparse(url)
@@ -84,25 +101,19 @@ def get_reviews():
 @app.route('/sites', methods=['POST'])
 def add_site():
     new_site = request.get_json()
-    conn = get_db_connection()
-    conn.execute('''
+    execute_with_retry('''
         INSERT INTO sites (link, from_column, reason, frequency)
         VALUES (?, ?, ?, ?)
     ''', (new_site['link'], new_site['from_column'], new_site['reason'], new_site['frequency']))
-    conn.commit()
-    conn.close()
     return '', 201
 
 @app.route('/reviews', methods=['POST'])
 def add_review():
     new_review = request.get_json()
-    conn = get_db_connection()
-    conn.execute('''
+    execute_with_retry('''
         INSERT INTO reviews (user_id, password, link, review)
         VALUES (?, ?, ?, ?)
     ''', (new_review['user_id'], new_review['password'], new_review['link'], new_review['review']))
-    conn.commit()
-    conn.close()
     return '', 201
 
 if __name__ == '__main__':
