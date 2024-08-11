@@ -23,11 +23,11 @@ def get_sites():
     url = request.args.get('url')  # 쿼리 파라미터에서 'url' 가져오기
     conn = get_db_connection()
     
-    # 데이터베이스에서 URL과 일치하는 항목을 찾습니다.
-    data = conn.execute('SELECT * FROM sites WHERE url = ?', (url,)).fetchone()
+    # 데이터베이스에서 link와 일치하는 항목을 찾습니다.
+    data = conn.execute('SELECT * FROM sites WHERE link = ?', (url,)).fetchone()
     conn.close()
 
-    # URL이 데이터베이스에 존재하면 'true', 존재하지 않으면 'false'를 반환합니다.
+    # link가 데이터베이스에 존재하면 'true', 존재하지 않으면 'false'를 반환합니다.
     if data:
         return jsonify({"result": True})
     else:
