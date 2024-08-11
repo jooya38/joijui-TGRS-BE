@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import sqlite3
 import os
 from create_db import init_db  # 데이터베이스 초기화 함수 가져오기
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
@@ -11,8 +12,19 @@ if not os.path.exists('site.db'):
 
 def get_db_connection():
     conn = sqlite3.connect('site.db')
+    encoding = conn.execute("PRAGMA encoding").fetchone()[0]
+    print(f"Database encoding: {encoding}")
     conn.row_factory = sqlite3.Row
     return conn
+
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    
+    # Scheme (http, https)를 무시하고 netloc (도메인 이름)과 path만 사용
+    domain = parsed_url.netloc.lower().replace('www.', '')
+    path = parsed_url.path
+    
+    return domain + path
 
 @app.route('/')
 def home():
@@ -21,25 +33,26 @@ def home():
 @app.route('/sites', methods=['GET'])
 def get_sites():
     url = request.args.get('url')  # 쿼리 파라미터에서 'url' 가져오기
+    normalized_url = normalize_url(url)
+
     conn = get_db_connection()
     
-    # 데이터베이스에서 link와 일치하는 항목을 찾습니다.
-    data = conn.execute('SELECT link, from_column, reason, frequency FROM sites WHERE link = ?', (url,)).fetchone()
+    data = conn.execute('SELECT * FROM sites').fetchall()
     conn.close()
 
-    # 데이터가 존재할 경우 각 정보를 JSON 응답으로 반환
-    if data:
-        result = {
-            "result": True,
-            "link": data["link"],
-            "from_column": data["from_column"],
-            "reason": data["reason"],
-            "frequency": data["frequency"]
-        }
-    else:
-        result = {"result": False}
+    # 모든 데이터베이스 URL도 정규화하여 비교
+    for row in data:
+        if normalize_url(row['link']) == normalized_url:
+            result = {
+                "result": True,
+                "link": row['link'],
+                "from": row['from_column'],
+                "reason": row['reason'],
+                "frequency": row['frequency']
+            }
+            return jsonify(result)
 
-    return jsonify(result)
+    return jsonify({"result": False})
 
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
