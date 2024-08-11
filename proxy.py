@@ -24,14 +24,22 @@ def get_sites():
     conn = get_db_connection()
     
     # 데이터베이스에서 link와 일치하는 항목을 찾습니다.
-    data = conn.execute('SELECT * FROM sites WHERE link = ?', (url,)).fetchone()
+    data = conn.execute('SELECT link, from_column, reason, frequency FROM sites WHERE link = ?', (url,)).fetchone()
     conn.close()
 
-    # link가 데이터베이스에 존재하면 'true', 존재하지 않으면 'false'를 반환합니다.
+    # 데이터가 존재할 경우 각 정보를 JSON 응답으로 반환
     if data:
-        return jsonify({"result": True})
+        result = {
+            "result": True,
+            "link": data["link"],
+            "from_column": data["from_column"],
+            "reason": data["reason"],
+            "frequency": data["frequency"]
+        }
     else:
-        return jsonify({"result": False})
+        result = {"result": False}
+
+    return jsonify(result)
 
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
@@ -46,8 +54,8 @@ def add_site():
     conn = get_db_connection()
     conn.execute('''
         INSERT INTO sites (link)
-        VALUES (?)
-    ''', (new_site['link'],))
+        VALUES (?, ?, ?, ?)
+    ''', (new_site['link'], new_site['from'], new_site['reason'], new_site['frequency']))
     conn.commit()
     conn.close()
     return '', 201

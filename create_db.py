@@ -11,7 +11,10 @@ def init_db():
     # 사기사이트링크(링크(PK))
     cur.execute('''
         CREATE TABLE IF NOT EXISTS sites (
-            link TEXT PRIMARY KEY
+            link TEXT PRIMARY KEY,
+            from_column TEXT,
+            reason TEXT,
+            frequency INTEGER
         )
     ''')
 
@@ -33,10 +36,10 @@ def init_db():
             next(reader)  # 헤더 건너뛰기
             for row in reader:
                 cur.execute('''
-                    INSERT INTO sites (link)
-                    VALUES (?)
-                ''', (row[0],))
-                print(f"Inserted site: {row[0]}")
+                    INSERT INTO sites (link, from_column, reason, frequency)
+                    VALUES (?, ?, ?, ?)
+                ''', (row[0],row[1],row[2],row[3]))
+                print(f"Inserted site: {row[0]} {row[1]} {row[2]} {row[3]}")
 
     # reviews.csv 파일 읽기 및 데이터 삽입
     if os.path.exists('./reviews.csv'):
