@@ -3,8 +3,11 @@ import sqlite3
 import os
 from create_db import init_db  # 데이터베이스 초기화 함수 가져오기
 from urllib.parse import urlparse, urlunparse
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)  # 모든 출처에서의 요청을 허용
 
 # 데이터베이스 초기화
 if not os.path.exists('site.db'):
@@ -85,7 +88,7 @@ def add_site():
     conn.execute('''
         INSERT INTO sites (link, from_column, reason, frequency)
         VALUES (?, ?, ?, ?)
-    ''', (new_site['link'], new_site['from'], new_site['reason'], new_site['frequency']))
+    ''', (new_site['link'], new_site['from_column'], new_site['reason'], new_site['frequency']))
     conn.commit()
     conn.close()
     return '', 201
