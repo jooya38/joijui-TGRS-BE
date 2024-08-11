@@ -20,10 +20,18 @@ def home():
 
 @app.route('/sites', methods=['GET'])
 def get_sites():
+    url = request.args.get('url')  # 쿼리 파라미터에서 'url' 가져오기
     conn = get_db_connection()
-    data = conn.execute('SELECT * FROM sites').fetchall()
+    
+    # 데이터베이스에서 URL과 일치하는 항목을 찾습니다.
+    data = conn.execute('SELECT * FROM sites WHERE url = ?', (url,)).fetchone()
     conn.close()
-    return jsonify([dict(row) for row in data])
+
+    # URL이 데이터베이스에 존재하면 'true', 존재하지 않으면 'false'를 반환합니다.
+    if data:
+        return jsonify({"result": True})
+    else:
+        return jsonify({"result": False})
 
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
