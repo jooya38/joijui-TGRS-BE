@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, Blueprint
 import sqlite3
 import os
 from create_db import init_db  # 데이터베이스 초기화 함수 가져오기
@@ -62,11 +62,14 @@ def normalize_url(url):
     
     return normalized_url
 
-@app.route('/')
-def home():
-    return "딱걸렸어 솔루션 API PROXY"
+# Blueprint 생성
+main_bp = Blueprint('main', __name__)
 
-@app.route('/sites', methods=['GET'])
+@main_bp.route('/')
+def home():
+    return render_template('index.html')
+
+@main_bp.route('/sites', methods=['GET'])
 def get_sites():
     url = request.args.get('url')  # 쿼리 파라미터에서 'url' 가져오기
     normalized_url = normalize_url(url)
@@ -91,14 +94,14 @@ def get_sites():
 
     return jsonify({"result": False})
 
-@app.route('/reviews', methods=['GET'])
+@main_bp.route('/reviews', methods=['GET'])
 def get_reviews():
     conn = get_db_connection()
     data = conn.execute('SELECT * FROM reviews').fetchall()
     conn.close()
     return jsonify([dict(row) for row in data])
 
-@app.route('/sites', methods=['POST'])
+@main_bp.route('/sites', methods=['POST'])
 def add_site():
     new_site = request.get_json()
     execute_with_retry('''
@@ -107,7 +110,7 @@ def add_site():
     ''', (new_site['link'], new_site['from_column'], new_site['reason'], new_site['frequency']))
     return '', 201
 
-@app.route('/reviews', methods=['POST'])
+@main_bp.route('/reviews', methods=['POST'])
 def add_review():
     new_review = request.get_json()
     execute_with_retry('''
@@ -115,6 +118,9 @@ def add_review():
         VALUES (?, ?, ?, ?)
     ''', (new_review['user_id'], new_review['password'], new_review['link'], new_review['review']))
     return '', 201
+
+# Blueprint를 /joijui로 등록
+app.register_blueprint(main_bp, url_prefix='/joijui')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=25570, debug=True)
